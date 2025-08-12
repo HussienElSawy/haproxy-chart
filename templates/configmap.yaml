@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "haproxy.fullname" . }}
+data:
+  haproxy.cfg: |
+  global
+      log stdout format raw local0
+
+    defaults
+      log     global
+      mode    {{ .Values.haproxy.default.mode | default "http" }}
+      option  {{ .Values.haproxy.default.log | default "httplog" }}
+      timeout connect {{ .Values.haproxy.defaults.connect_timeout | default "5000ms" }}
+      timeout client  {{ .Values.haproxy.defaults.client_timeout | default "50000ms" }}
+      timeout server  {{ .Values.haproxy.defaults.server_timeout | default "50000ms" }}
+    
+    frontend tcp-in
+      bind *:{{ .Values.service.frontend_port }}
+      default_backend backend_servers
+
+    backend backend_servers
+      balance {{ .Values.haproxy.backend_balance | default "roundrobin" }}
+{{- range .Values.haproxy.backendServers }}
+      server {{ .name }} {{ .address }} check
+{{- end }}
+
+    #monitoring
+    listen 0.0.0.0
+      bind *:{{ .Values.service.stats_port }}
+
+      monitor-uri /_/health
+
+      option httpclose
+      http-request use-service prometheus-exporter if { path /metrics }
+      option httplog
+      option dontlog-normal
+
+      stats uri /
+      stats show-node
+      stats refresh 30s
+      stats show-legends

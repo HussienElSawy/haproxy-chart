@@ -1,0 +1,35 @@
+replicaCount: 1
+
+resource:
+  requests:
+    cpu: "500m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+image:
+  repository: haproxy
+  tag: "2.8"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  frontend_port: 80
+  stats_port: 8181
+
+
+haproxy:
+  default:
+    mode: http
+    log: httplog
+  defaults:
+    connect_timeout: "5000ms"
+    client_timeout: "50000ms"
+    server_timeout: "50000ms"
+  backend_balance: roundrobin
+  backendServers:
+    - name: service1
+      address: service1.namespace.svc.cluster.local:8080
+    - name: service2
+      address: service2.namespace.svc.cluster.local:8080

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "haproxy.fullname" . }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ include "haproxy.name" . }}
+  ports:
+    - name: stats
+      port: {{ .Values.service.stats_port }}
+      targetPort: {{ .Values.service.stats_port }}
+    - name: frontend
+      port: {{ .Values.service.frontend_port }}
+      targetPort: {{ .Values.service.frontend_port }}
