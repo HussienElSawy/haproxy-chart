@@ -1,4 +1,4 @@
-# haproxy-helm
+# Haproxy-Chart
 
 A Helm chart for deploying [HAProxy](https://www.haproxy.org/) in Kubernetes.
 
